@@ -1,12 +1,10 @@
 module ReactHooksSample.UseEffect
 
-open Fable.Core
+open System
+open Browser.Types
 open Fable.React
 open Fable.React.Props
-open ReactHooksSample.Bindings
-open System
 open Thoth.Json
-open Browser.Types
 
 let decodeRepoItem =
     Decode.field "name" Decode.string
@@ -14,7 +12,7 @@ let decodeRepoItem =
 let decodeResonse = Decode.array decodeRepoItem
 
 let githubUsers =
-        [ "fable-compiler"; "fsprojects"; "nojaf" ]
+    [ "fable-compiler"; "fsprojects"; "nojaf" ]
 
 
 let loadRepos updateRepos user =
@@ -25,33 +23,34 @@ let loadRepos updateRepos user =
     |> Promise.mapResult updateRepos
     |> ignore
 
-let effectComponent() =
-    let options =
-        githubUsers
-        |> List.map (fun name ->
-            option [ Value name; Key name ] [ str name ]
-        )
-        |> (@) (List.singleton (option [ Value ""; Key "empty" ] []))
+let effectComponent =
+    FunctionComponent.Of(fun () ->
+        let options =
+            githubUsers
+            |> List.map (fun name ->
+                option [ Value name; Key name ] [ str name ]
+            )
+            |> (@) (List.singleton (option [ Value ""; Key "empty" ] []))
 
-    let (selectedOrg, setOrganisation) = useState ("")
-    let (repos, setRepos) = useState (Array.empty)
-    let onChange (ev : Event) = setOrganisation (ev.Value)
+        let selectedOrg = Hooks.useState ("")
+        let repos = Hooks.useState (Array.empty)
+        let onChange (ev : Event) = selectedOrg.update (ev.Value)
 
-    useEffect (fun () ->
-        match System.String.IsNullOrWhiteSpace(selectedOrg) with
-        | true -> setRepos Array.empty
-        | false -> loadRepos setRepos selectedOrg
-        |> U2.Case1
-    ) [| selectedOrg |]
+        Hooks.useEffect (fun () ->
+            match System.String.IsNullOrWhiteSpace(selectedOrg.current) with
+            | true -> repos.update Array.empty
+            | false -> loadRepos repos.update selectedOrg.current
+        , [| selectedOrg |])
 
-    let repoListItems =
-        repos
-        |> Array.sortWith (fun a b -> String.Compare(a, b, System.StringComparison.OrdinalIgnoreCase))
-        |> Array.map (fun r -> li [ Key r ] [ str r ])
+        let repoListItems =
+            repos.current
+            |> Array.sortWith (fun a b -> String.Compare(a, b, System.StringComparison.OrdinalIgnoreCase))
+            |> Array.map (fun r -> li [ Key r ] [ str r ])
 
-    div [ ClassName "content" ] [
-        div [ ClassName "select" ] [
-            select [ Value selectedOrg; OnChange onChange ] options
+        div [ ClassName "content" ] [
+            div [ ClassName "select" ] [
+                select [ Value selectedOrg; OnChange onChange ] options
+            ]
+            ul [] repoListItems
         ]
-        ul [] repoListItems
-    ]
+    )

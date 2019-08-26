@@ -2,7 +2,6 @@ module ReactHooksSample.UseReducer
 
 open Fable.React
 open Fable.React.Props
-open ReactHooksSample.Bindings
 
 type Msg =
     | Increase
@@ -19,12 +18,14 @@ let update model msg =
     | Decrease -> { model with Value = model.Value - 1 }
     | Reset -> intialState
 
-let reducerComponent() =
-    let (model, dispatch) = useReducer update intialState
+let reducerComponent =
+    FunctionComponent.Of(fun (initialState: Model) ->
+        let model = Hooks.useReducer(update, initialState)
 
-    div [] [
-        button [ ClassName "button"; OnClick(fun _ -> dispatch Increase) ] [ str "Increase" ]
-        button [ ClassName "button"; OnClick(fun _ -> dispatch Decrease) ] [ str "Decrease" ]
-        button [ ClassName "button"; OnClick(fun _ -> dispatch Reset) ] [ str "Reset" ]
-        p [ ClassName "title is-2 has-text-centered" ] [ sprintf "%i" model.Value |> str ]
-    ]
+        div [] [
+            button [ ClassName "button"; OnClick(fun _ -> model.update Increase) ] [ str "Increase" ]
+            button [ ClassName "button"; OnClick(fun _ -> model.update Decrease) ] [ str "Decrease" ]
+            button [ ClassName "button"; OnClick(fun _ -> model.update Reset) ] [ str "Reset" ]
+            p [ ClassName "title is-2 has-text-centered" ] [ sprintf "%i" model.current.Value |> str ]
+        ]
+    )
