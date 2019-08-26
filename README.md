@@ -1,6 +1,6 @@
 # Fable React hooks sample
 
-Source code for [blogpost on nojaf.com](https://blog.nojaf.com/react-hooks-in-fable).
+Source code for [blogpost on nojaf.com](https://blog.nojaf.com/2018/11/10/react-hooks-in-fable/).
 
 ## How to run
 
@@ -12,6 +12,4 @@ Source code for [blogpost on nojaf.com](https://blog.nojaf.com/react-hooks-in-fa
 
 - `yarn install`
 
-- `cd src`
-
-- `dotnet fable webpack-dev-server`
+- `yarn webpack-dev-server`
